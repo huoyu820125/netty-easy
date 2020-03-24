@@ -228,7 +228,12 @@ public class NetWorker {
         String id = channel.id().asLongText();
         NetConnection connection = connectMap.remove(id);
         connection.getChannel().close();
-        return contextMap.remove(id);
+        NetConnectContext netConnectContext = contextMap.remove(id);
+        if (netConnectContext.isClient()) {
+            //server close
+            client.onServerDisconnected(channel);
+        }
+        return netConnectContext;
     }
 
     /**

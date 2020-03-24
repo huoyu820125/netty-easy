@@ -3,6 +3,7 @@ package com.easy.netty.frame.client;
 import com.easy.netty.frame.heart.HandlerOutTimeMonitor;
 import com.easy.netty.frame.protocol.ProtocolPool;
 import com.easy.netty.frame.connection.HandlerConnectionlayer;
+import com.easy.netty.sdk.NetConnectContext;
 import com.easy.netty.sdk.NetWorker;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -12,10 +13,10 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import sun.security.krb5.internal.NetClient;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -31,7 +32,19 @@ public class NettyClient {
     private ClientRuntimeOptions runtimeOptions = new ClientRuntimeOptions(this);
     private Bootstrap bootstrap;
     private EventLoopGroup group = new NioEventLoopGroup();
-    private List<InetSocketAddress> serverAddressList = new ArrayList<>();
+    private ConcurrentHashMap<String, ServerState> serverStateMap = new ConcurrentHashMap();
+
+    private class ServerState {
+        public final static int DISCONNECTION = 0;
+        public final static int RUNNING = 1;
+        public String svrName = "";
+        public InetSocketAddress address;
+        public int state = ServerState.DISCONNECTION;
+
+        public String addressKey() {
+            return NettyClient.addressKey(address);
+        }
+    }
 
     @Autowired
     NetWorker netWorker;
@@ -73,9 +86,14 @@ public class NettyClient {
      * return: this
      */
     public NettyClient addServer(String serverName, String host, Integer port) {
-        InetSocketAddress socketAddress = new InetSocketAddress(host, port);
-        serverAddressList.add(new InetSocketAddress(host, port));
-        protocolPool.associateServerName(socketAddress, serverName);
+        ServerState serverState = new ServerState();
+        serverState.address = new InetSocketAddress(host, port);
+        serverState.svrName = serverName;
+        if (serverStateMap.contains(serverState.addressKey())) {
+            return this;
+        }
+        serverStateMap.put(serverState.addressKey(), serverState);
+        protocolPool.associateServerName(serverState.address, serverName);
         return this;
     }
 
@@ -103,18 +121,12 @@ public class NettyClient {
         }
         isRunning = true;
 
-        if (serverAddressList.isEmpty()) {
-            throw new RuntimeException("lack server connect info! please call the function addServer() before startClient");
-        }
-
         initNetty();
 
         /**
          * connect to all server
          */
-        for (InetSocketAddress socketAddress : serverAddressList) {
-            connect(socketAddress, runtimeOptions.reconnectSecond);
-        }
+        startConnectTread();
 
         return this;
     }
@@ -179,25 +191,6 @@ public class NettyClient {
         }
     }
 
-    /**
-     * author: SunQian
-     * date: 2020/3/13 10:32
-     * title: connect to server
-     * descritpion:
-     *          connect to server and check that the address exists in the service list,
-     *      if not exist then add to service list
-     * @param svrName
-     * @param hostname
-     * @param port
-     * @param reconnectSecond
-     * return: TODO
-     */
-    public void connect(String svrName, String hostname, Integer port, Integer reconnectSecond) {
-        addServer(svrName, hostname, port);
-        InetSocketAddress serverAddress = new InetSocketAddress(hostname, port);
-        connect(serverAddress, reconnectSecond);
-    }
-
     public synchronized void stop() {
         if (!isInitialized) {
             return;
@@ -209,5 +202,55 @@ public class NettyClient {
 
         //shutdown thread group
         group.shutdownGracefully();
+    }
+
+
+    public class ClientConnectTread implements Runnable {
+        private void sleep(long millSecond) {
+            try {
+                Thread.sleep(millSecond);
+            }
+            catch (InterruptedException e) {
+
+            }
+        }
+
+        public void run() {
+            while (isRunning) {
+                serverStateMap.entrySet().forEach(serverStateEntry ->{
+                    ServerState serverState = serverStateEntry.getValue();
+                    if (ServerState.DISCONNECTION != serverState.state) {
+                        return;
+                    }
+
+                    /**
+                     * Running indicates that the operation has started,
+                     * the connection may be in progress or the connection may be completed
+                     */
+                    serverState.state = ServerState.RUNNING;
+                    connect(serverState.address, runtimeOptions.reconnectSecond);
+                });
+                sleep(runtimeOptions.reconnectSecond);
+            }
+        }
+    }
+
+    public void startConnectTread() {
+        Thread thread = new Thread(new ClientConnectTread());
+        thread.start();
+    }
+
+    public void onServerDisconnected(Channel channel) {
+        ServerState serverState = serverStateMap.get(addressKey(((InetSocketAddress)channel.remoteAddress())));
+        //active reconnect task
+        serverState.state = ServerState.DISCONNECTION;
+    }
+
+    public static String addressKey(InetSocketAddress address) {
+        StringBuffer fullAddress = new StringBuffer();
+        fullAddress.append(address.getAddress().getHostAddress())
+                .append(":").append(address.getPort());
+
+        return fullAddress.toString();
     }
 }
