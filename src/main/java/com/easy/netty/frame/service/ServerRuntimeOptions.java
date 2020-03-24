@@ -7,7 +7,7 @@ package com.easy.netty.frame.service;
  * @Description: runtime options of server
  */
 public class ServerRuntimeOptions {
-    public int heartbeatSecond = 0;
+    public int heartbeatSecond = 30;
     private NettyServer nettyServer;
 
     public ServerRuntimeOptions(NettyServer nettyServer) {

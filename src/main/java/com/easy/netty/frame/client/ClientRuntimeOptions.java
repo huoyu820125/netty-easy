@@ -6,7 +6,7 @@ package com.easy.netty.frame.client;
  * @Description: runtime options of client
  */
 public class ClientRuntimeOptions {
-    public int heartbeatSecond = 0;
+    public int heartbeatSecond = 20;
     public int reconnectSecond = 5;
     private NettyClient nettyClient;
 
