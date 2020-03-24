@@ -82,7 +82,9 @@ public class NettyAssembler {
      * @param handlerIdleConnection
      * return: TODO
      */
-    public void setHandlerIdleConnection(IHandlerIdleConnection handlerIdleConnection) {
+    public NettyAssembler setHandlerIdleConnection(IHandlerIdleConnection handlerIdleConnection) {
         this.handlerIdleConnection = handlerIdleConnection;
+
+        return this;
     }
 }
