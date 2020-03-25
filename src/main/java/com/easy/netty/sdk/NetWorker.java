@@ -123,10 +123,11 @@ public class NetWorker {
     public void waitStop() {
         try {
             stopSemaphore.acquire();
-            connectMap.entrySet().stream().forEach(entry -> {
+            //不可用java8方式遍历(即：stream().forEach(entry -> {}))，因为其它线程的插入新元素的操作，会导致遍历直接终止。
+            for (ConcurrentHashMap.Entry<String, NetConnection> entry : connectMap.entrySet()) {
                 Channel channel = entry.getValue().getChannel();
                 channel.closeFuture().syncUninterruptibly();
-            });
+            }
         }
         catch (Exception e) {
 
@@ -147,10 +148,12 @@ public class NetWorker {
         /**
          * close all connection
          */
-        connectMap.entrySet().stream().forEach(entry -> {
+        //不可用java8方式遍历(即：stream().forEach(entry -> {}))，因为其它线程的插入新元素的操作，会导致遍历直接终止。
+        // connectMap.entrySet().stream().forEach(entry -> {});
+        for (ConcurrentHashMap.Entry<String, NetConnection> entry : connectMap.entrySet()) {
             Channel channel = entry.getValue().getChannel();
             channel.close();
-        });
+        }
 
         client.stop();
         server.stop();

@@ -215,8 +215,9 @@ public class NettyClient {
 
         public void run() {
             while (isRunning) {
-                serverStateMap.entrySet().forEach(serverStateEntry ->{
-                    ServerState serverState = serverStateEntry.getValue();
+                //不可用java8方式遍历(即：stream().forEach(entry -> {}))，因为其它线程的插入新元素的操作，会导致遍历直接终止。
+                for (ConcurrentHashMap.Entry<String, ServerState> entry : serverStateMap.entrySet()) {
+                    ServerState serverState = entry.getValue();
                     if (ServerState.DISCONNECTION != serverState.state) {
                         return;
                     }
@@ -227,7 +228,7 @@ public class NettyClient {
                      */
                     serverState.state = ServerState.RUNNING;
                     connect(serverState.address, runtimeOptions.reconnectSecond);
-                });
+                }
                 sleep(runtimeOptions.reconnectSecond);
             }
         }
