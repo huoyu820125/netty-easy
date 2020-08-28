@@ -232,7 +232,7 @@ public class NetWorker {
         NetConnection connection = connectMap.remove(id);
         connection.getChannel().close();
         NetConnectContext netConnectContext = contextMap.remove(id);
-        if (netConnectContext.isClient()) {
+        if (!netConnectContext.isClient()) {
             //server close
             client.onServerDisconnected(channel);
         }

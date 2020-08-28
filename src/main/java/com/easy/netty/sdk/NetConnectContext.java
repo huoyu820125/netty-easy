@@ -32,7 +32,7 @@ public class NetConnectContext {
     }
 
     public void setIdentity(boolean isClient) {
-        isClient = isClient;
+        this.isClient = isClient;
     }
 
     public void bindData(int dataType, Object businessData) {
