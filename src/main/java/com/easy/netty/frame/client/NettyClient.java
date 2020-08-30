@@ -219,7 +219,7 @@ public class NettyClient {
                 for (ConcurrentHashMap.Entry<String, ServerState> entry : serverStateMap.entrySet()) {
                     ServerState serverState = entry.getValue();
                     if (ServerState.DISCONNECTION != serverState.state) {
-                        return;
+                        continue;
                     }
 
                     /**
@@ -229,7 +229,7 @@ public class NettyClient {
                     serverState.state = ServerState.RUNNING;
                     connect(serverState.address, runtimeOptions.reconnectSecond);
                 }
-                sleep(runtimeOptions.reconnectSecond);
+                sleep(runtimeOptions.reconnectSecond*1000);
             }
         }
     }
