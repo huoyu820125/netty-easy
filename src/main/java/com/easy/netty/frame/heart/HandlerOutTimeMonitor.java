@@ -1,7 +1,8 @@
 package com.easy.netty.frame.heart;
 
 import io.netty.channel.*;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
@@ -12,9 +13,9 @@ import java.util.concurrent.TimeUnit;
  * @CreateTime 2020/3/17 10:34
  * @Description: TODO
  */
-@Slf4j
 @ChannelHandler.Sharable
 public class HandlerOutTimeMonitor extends ChannelOutboundHandlerAdapter implements ChannelInboundHandler {
+    private final Logger log = LoggerFactory.getLogger(getClass());
     private IHandlerIdleConnection handlerIdleConnect;
     private ConcurrentHashMap<String, IOMonitor> channelMonitorMap = new ConcurrentHashMap<>();
     private long writerIdleTimeNanos = 0L;
@@ -83,7 +84,7 @@ public class HandlerOutTimeMonitor extends ChannelOutboundHandlerAdapter impleme
             }
         }
         catch (Exception e){
-            throw new RuntimeException("refresh last write time issue exception:");
+            throw new RuntimeException("refresh last write time issue exception:", e);
         }
         finally {
             ctx.flush();
@@ -140,21 +141,6 @@ public class HandlerOutTimeMonitor extends ChannelOutboundHandlerAdapter impleme
         finally {
             ctx.fireChannelInactive();
         }
-    }
-
-    /**
-     * author: SunQian
-     * date: 2020/3/17 11:39
-     * title: TODO
-     * descritpion: TODO
-     * @param ctx
-     * return: TODO
-     */
-    @Override
-    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        channelMonitorMap.entrySet().forEach(entry -> {
-            entry.getValue().stop();
-        });
     }
 
     /**

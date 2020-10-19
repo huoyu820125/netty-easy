@@ -82,7 +82,7 @@ public class ProtocolUtils {
      * @param netStream
      * return: TODO
      */
-    public static Object readObject(Class<?> objectSizeType, ByteBuf netStream) {
+    public static byte[] readObject(Class<?> objectSizeType, ByteBuf netStream) {
         int objectSize;
         if (Integer.class.equals(objectSizeType)) {
             objectSize = netStream.readInt();
@@ -96,7 +96,7 @@ public class ProtocolUtils {
 
         byte[] objectStream = new byte[objectSize];
         netStream.readBytes(objectStream);
-        return ProtocolUtils.deserialize(objectStream);
+        return objectStream;
     }
 
     /**

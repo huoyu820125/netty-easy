@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ChannelHandler.Sharable
-public class HandlerConnectionlayer extends SimpleChannelInboundHandler<ByteBuf> {
+public class HandlerConnectionLayer extends SimpleChannelInboundHandler<ByteBuf> {
     private NetWorker netWorker;
 
     @Autowired

@@ -35,8 +35,10 @@ public class DefaultProtocol implements IProtocol {
         String messageType = null;
         Object data = null;
         try{
-            messageType = (String)ProtocolUtils.readObject(Short.class, netStream);
-            data = ProtocolUtils.readObject(Integer.class, netStream);
+            byte[] objectStream = ProtocolUtils.readObject(Short.class, netStream);
+            messageType = (String)ProtocolUtils.deserialize(objectStream);
+            objectStream = ProtocolUtils.readObject(Integer.class, netStream);
+            data = ProtocolUtils.deserialize(objectStream);
         }
         catch (Exception e) {
             throw new ExceptionMessageFormat(e.getMessage());

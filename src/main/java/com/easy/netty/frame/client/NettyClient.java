@@ -2,14 +2,16 @@ package com.easy.netty.frame.client;
 
 import com.easy.netty.frame.heart.HandlerOutTimeMonitor;
 import com.easy.netty.frame.protocol.ProtocolPool;
-import com.easy.netty.frame.connection.HandlerConnectionlayer;
+import com.easy.netty.frame.connection.HandlerConnectionLayer;
 import com.easy.netty.sdk.NetWorker;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +24,9 @@ import java.util.concurrent.TimeUnit;
  * @CreateTime 2020/3/11 15:58
  * @Description: TODO
  */
-@Slf4j
 @Component
 public class NettyClient {
+    private final Logger log = LoggerFactory.getLogger(getClass());
     private boolean isInitialized = false;
     private boolean isRunning = false;
     private ClientRuntimeOptions runtimeOptions = new ClientRuntimeOptions(this);
@@ -51,11 +53,11 @@ public class NettyClient {
     private ProtocolPool protocolPool;
 
     @Autowired
-    HandlerConnectionlayer handlerConnectionlayer;
+    HandlerConnectionLayer handlerConnectionlayer;
 
     public synchronized NettyClient initialize() {
         if (isInitialized) {
-            throw new RuntimeException("repeat initialization client");
+            throw new RuntimeException("repeat initialization nettyClient");
         }
         isInitialized = true;
 
@@ -146,7 +148,7 @@ public class NettyClient {
                 });
         }
         catch (Exception e) {
-            throw new RuntimeException("client initialization is not successed");
+            throw new RuntimeException("nettyClient initialization is not successed");
         }
         finally {
         }
@@ -172,7 +174,7 @@ public class NettyClient {
                 /**
                  * try to reconnect if the connection is failed
                  */
-                log.error("connect to the server of {}:{} is failed",
+                log.error("connect to the nettyServer of {}:{} is failed",
                     serverAddress.getAddress().getHostAddress(), serverAddress.getPort());
                 if (null == reconnectSecond || reconnectSecond < 0) {
                     log.info("not reconnect!");
@@ -185,7 +187,7 @@ public class NettyClient {
                 eventLoop.schedule(() -> connect(serverAddress, reconnectSecond), reconnectSecond, TimeUnit.SECONDS);
             });
         } catch (Exception e) {
-            log.error("client connect exception:", e);
+            log.error("nettyClient connect exception:", e);
         }
     }
 
@@ -242,7 +244,9 @@ public class NettyClient {
     public void onServerDisconnected(Channel channel) {
         ServerState serverState = serverStateMap.get(addressKey(((InetSocketAddress)channel.remoteAddress())));
         //active reconnect task
-        serverState.state = ServerState.DISCONNECTION;
+        if(null != serverState){
+            serverState.state = ServerState.DISCONNECTION;
+        }
     }
 
     public static String addressKey(InetSocketAddress address) {

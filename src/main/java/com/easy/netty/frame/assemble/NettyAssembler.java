@@ -1,4 +1,4 @@
-package com.easy.netty.frame;
+package com.easy.netty.frame.assemble;
 
 import com.easy.netty.frame.heart.IHandlerIdleConnection;
 import com.easy.netty.frame.memory.DefaultMemoryPool;
@@ -40,7 +40,10 @@ public class NettyAssembler {
     public NetWorker netWorker() {
         if (null == memoryPool) {
             ApplicationContext context = applicationObjectSupport.getApplicationContext();
-            memoryPool = (DefaultMemoryPool) context.getBean("defaultMemoryPool");
+            if(context==null){
+                throw new RuntimeException("Application failed to get spring application context");
+            }
+            memoryPool = context.getBean(DefaultMemoryPool.class);
         }
 
         return netWorker;

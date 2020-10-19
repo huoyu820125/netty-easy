@@ -5,9 +5,9 @@ import com.easy.netty.frame.heart.IHandlerIdleConnection;
 import com.easy.netty.frame.protocol.ProtocolPool;
 import com.easy.netty.frame.service.NettyServer;
 import com.easy.netty.frame.protocol.IProtocol;
-import com.easy.netty.frame.connection.HandlerConnectionlayer;
+import com.easy.netty.frame.connection.HandlerConnectionLayer;
 import com.easy.netty.frame.connection.NetConnection;
-import com.easy.netty.frame.NettyAssembler;
+import com.easy.netty.frame.assemble.NettyAssembler;
 import com.easy.netty.frame.client.NettyClient;
 import io.netty.channel.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,12 +81,12 @@ public class NetWorker {
     private void init() {
         if (null == assembler.handlerIdleConnection) {
             ApplicationContext context = applicationObjectSupport.getApplicationContext();
-            IHandlerIdleConnection handlerIdleConnection = (DefaultHandlerIdleConnection) context.getBean("defaultHandlerIdleConnection");
+            IHandlerIdleConnection handlerIdleConnection = context.getBean(DefaultHandlerIdleConnection.class);
             assembler.setHandlerIdleConnection(handlerIdleConnection);
         }
 
         ApplicationContext context = applicationObjectSupport.getApplicationContext();
-        HandlerConnectionlayer handlerConnectionlayer = (HandlerConnectionlayer) context.getBean("handlerConnectionlayer");
+        HandlerConnectionLayer handlerConnectionlayer = context.getBean(HandlerConnectionLayer.class);
         handlerConnectionlayer.init(this);
     }
 
@@ -232,6 +232,7 @@ public class NetWorker {
         NetConnection connection = connectMap.remove(id);
         connection.getChannel().close();
         NetConnectContext netConnectContext = contextMap.remove(id);
+        // 当对方不是client的时候，我方执行client的断开连接方法
         if (!netConnectContext.isClient()) {
             //server close
             client.onServerDisconnected(channel);

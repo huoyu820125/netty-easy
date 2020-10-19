@@ -57,7 +57,7 @@ public class NetConnectContext {
      * @param data
      * return: TODO
      */
-    public void sendMessage(String messageType, Object data) {
+    public void sendMessageUseDefaultProtocol(String messageType, Object data) {
         DefaultMessage message = new DefaultMessage();
         message.setMessageType(messageType);
         message.setData(data);

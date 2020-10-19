@@ -1,15 +1,16 @@
 package com.easy.netty.frame.service;
 
 import com.easy.netty.frame.heart.HandlerOutTimeMonitor;
-import com.easy.netty.frame.connection.HandlerConnectionlayer;
+import com.easy.netty.frame.connection.HandlerConnectionLayer;
 import com.easy.netty.sdk.NetWorker;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,9 +21,9 @@ import java.util.concurrent.TimeUnit;
  * @CreateTime 2020/3/11 15:08
  * @Description: TODO
  */
-@Slf4j
 @Component
 public class NettyServer {
+    private final Logger log = LoggerFactory.getLogger(getClass());
     private boolean isInitialized = false;
     private boolean isRunning = false;
     private ServerBootstrap bootstrap;
@@ -35,21 +36,21 @@ public class NettyServer {
     private int port = 0;
 
     @Autowired
-    private HandlerConnectionlayer handlerConnectionlayer;
+    private HandlerConnectionLayer handlerConnectionlayer;
 
     @Autowired
     private NetWorker netWorker;
 
     public synchronized NettyServer initialize(String svrName, int port) {
         if (isInitialized) {
-            throw new RuntimeException("repeat initialization server");
+            throw new RuntimeException("Duplicate initialization of nettyServer");
         }
 
         isInitialized = true;
         this.svrName = svrName;
 
         if (port < 1 || port > 65535) {
-            throw new RuntimeException("port should is a number from 1 to 65535");
+            throw new RuntimeException("Port should be a number between 1 and 65535");
         }
 
         this.port = port;
@@ -94,7 +95,7 @@ public class NettyServer {
         isRunning = true;
 
         if (StringUtils.isEmpty(svrName)) {
-            throw new RuntimeException("not set server's name, call the svrname() before run()");
+            throw new RuntimeException("not set nettyServer's name, call the svrname() before run()");
         }
 
         if (0 == port) {
@@ -103,7 +104,7 @@ public class NettyServer {
 
         initNetty();
         bind(port);
-        log.info("Netty server is running and listening on port {} and ready for connections...", port);
+        log.info("Netty nettyServer is running and listening on port {} and ready for connections...", port);
 
         return this;
     }
@@ -126,7 +127,7 @@ public class NettyServer {
 
         }
         catch (Exception e) {
-            throw new RuntimeException("netty server initialization is not successed");
+            throw new RuntimeException("netty nettyServer initialization is not successed");
         }
         finally {
         }
@@ -137,11 +138,11 @@ public class NettyServer {
             ChannelFuture channelFuture = bootstrap.bind(port).sync();
             acceptChannel = channelFuture.channel();
             if (null == channelFuture || !channelFuture.isSuccess()) {
-                throw new RuntimeException("server start up error");
+                throw new RuntimeException("nettyServer start up error");
             }
         }
         catch (Exception e) {
-            throw new RuntimeException("server initialization is not successed");
+            throw new RuntimeException("nettyServer initialization is not successed");
         }
         finally {
         }
