@@ -1,7 +1,5 @@
 package com.easy.netty.sdk;
 
-import com.easy.netty.frame.heart.DefaultHandlerIdleConnection;
-import com.easy.netty.frame.heart.IHandlerIdleConnection;
 import com.easy.netty.frame.protocol.ProtocolPool;
 import com.easy.netty.frame.service.NettyServer;
 import com.easy.netty.frame.protocol.IProtocol;
@@ -10,10 +8,6 @@ import com.easy.netty.frame.connection.NetConnection;
 import com.easy.netty.frame.assemble.NettyAssembler;
 import com.easy.netty.frame.client.NettyClient;
 import io.netty.channel.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ApplicationObjectSupport;
-import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -23,23 +17,20 @@ import java.util.concurrent.Semaphore;
  * @CreateTime 2020/3/13 15:37
  * @Description: a worker in the network, it may is server also client
  */
-@Service
 public class NetWorker {
 
-    @Autowired
     private NettyAssembler assembler;
-
-    @Autowired
-    ProtocolPool protocolPool;
-
-    @Autowired
+    private ProtocolPool protocolPool;
     private NettyServer server;
-
-    @Autowired
     private NettyClient client;
 
-    @Autowired
-    ApplicationObjectSupport applicationObjectSupport;
+    public NetWorker(IHandlerBusinessLayer handlerBusinessLayer) {
+        protocolPool = new ProtocolPool();
+        assembler = new NettyAssembler(this, protocolPool);
+        HandlerConnectionLayer handlerConnectionlayer = new HandlerConnectionLayer(this, handlerBusinessLayer);
+        server = new NettyServer(this, handlerConnectionlayer);
+        client = new NettyClient(this, protocolPool, handlerConnectionlayer);
+    }
 
     protected ConcurrentHashMap<String, NetConnection> connectMap = new ConcurrentHashMap<>();
     private Semaphore stopSemaphore = new Semaphore(0,true);
@@ -78,18 +69,6 @@ public class NetWorker {
         return server;
     }
 
-    private void init() {
-        if (null == assembler.handlerIdleConnection) {
-            ApplicationContext context = applicationObjectSupport.getApplicationContext();
-            IHandlerIdleConnection handlerIdleConnection = context.getBean(DefaultHandlerIdleConnection.class);
-            assembler.setHandlerIdleConnection(handlerIdleConnection);
-        }
-
-        ApplicationContext context = applicationObjectSupport.getApplicationContext();
-        HandlerConnectionLayer handlerConnectionlayer = context.getBean(HandlerConnectionLayer.class);
-        handlerConnectionlayer.init(this);
-    }
-
     /**
      * author: SunQian
      * date: 2020/3/19 16:02
@@ -98,7 +77,6 @@ public class NetWorker {
      * return: TODO
      */
     public NetWorker run() {
-        init();
         client.run();
         server.run();
 

@@ -1,34 +1,31 @@
 package com.easy.netty.frame.assemble;
 
+import com.easy.netty.frame.heart.DefaultHandlerIdleConnection;
 import com.easy.netty.frame.heart.IHandlerIdleConnection;
 import com.easy.netty.frame.memory.DefaultMemoryPool;
 import com.easy.netty.frame.memory.IMemoryPool;
 import com.easy.netty.frame.protocol.IProtocol;
 import com.easy.netty.frame.protocol.ProtocolPool;
 import com.easy.netty.sdk.NetWorker;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ApplicationObjectSupport;
-import org.springframework.stereotype.Component;
 
 /**
  * @Author SunQian
  * @CreateTime 2020/3/19 11:40
  * @Description: used to assemble a netty process
  */
-@Component
 public class NettyAssembler {
     public IMemoryPool memoryPool;
     public IHandlerIdleConnection handlerIdleConnection;
-
-    @Autowired
     private ProtocolPool protocolPool;
+    private NetWorker netWorker;
 
-    @Autowired
-    ApplicationObjectSupport applicationObjectSupport;
+    public NettyAssembler(NetWorker netWorker, ProtocolPool protocolPool) {
+        this.netWorker = netWorker;
+        this.memoryPool = new DefaultMemoryPool();
+        this.protocolPool = protocolPool;
+        this.handlerIdleConnection = new DefaultHandlerIdleConnection(protocolPool);
+    }
 
-    @Autowired
-    NetWorker netWorker;
 
     /**
      * author: SunQian
@@ -38,14 +35,6 @@ public class NettyAssembler {
      * return: TODO
      */
     public NetWorker netWorker() {
-        if (null == memoryPool) {
-            ApplicationContext context = applicationObjectSupport.getApplicationContext();
-            if(context==null){
-                throw new RuntimeException("Application failed to get spring application context");
-            }
-            memoryPool = context.getBean(DefaultMemoryPool.class);
-        }
-
         return netWorker;
     }
 
@@ -58,6 +47,10 @@ public class NettyAssembler {
      * return: TODO
      */
     public NettyAssembler setMemoryPool(IMemoryPool memoryPool) {
+        if (null == memoryPool) {
+            return this;
+        }
+
         this.memoryPool = memoryPool;
         return this;
     }
@@ -86,6 +79,10 @@ public class NettyAssembler {
      * return: TODO
      */
     public NettyAssembler setHandlerIdleConnection(IHandlerIdleConnection handlerIdleConnection) {
+        if (null == handlerIdleConnection) {
+            return this;
+        }
+
         this.handlerIdleConnection = handlerIdleConnection;
 
         return this;

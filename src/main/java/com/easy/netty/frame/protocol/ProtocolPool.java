@@ -1,10 +1,7 @@
 package com.easy.netty.frame.protocol;
 
 import io.netty.channel.Channel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ApplicationObjectSupport;
-import org.springframework.stereotype.Component;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -15,14 +12,10 @@ import java.util.Map;
  * @CreateTime 2020/3/19 10:49
  * @Description: TODO
  */
-@Component
 public class ProtocolPool {
     private Map<String, IProtocol> serverProtocolMap = new HashMap<>();
     private Map<String, String> serverNameMap = new HashMap<>();
     private IProtocol defaultProtocol = null;
-
-    @Autowired
-    ApplicationObjectSupport applicationObjectSupport;
 
     /**
      * author: SunQian
@@ -76,8 +69,7 @@ public class ProtocolPool {
      */
     public IProtocol defaultProtocol() {
         if (null == defaultProtocol) {
-            ApplicationContext context = applicationObjectSupport.getApplicationContext();
-            defaultProtocol = (DefaultProtocol)context.getBean("defaultProtocol");
+            defaultProtocol = new DefaultProtocol();
         }
 
         return defaultProtocol;
@@ -113,7 +105,7 @@ public class ProtocolPool {
      * return: TODO
      */
     public void setServerProtocol(String svrName, IProtocol protocol) {
-        if (null == protocol) {
+        if (StringUtils.isEmpty(svrName) || null == protocol) {
             return;
         }
 

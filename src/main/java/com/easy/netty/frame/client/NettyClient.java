@@ -12,8 +12,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +22,6 @@ import java.util.concurrent.TimeUnit;
  * @CreateTime 2020/3/11 15:58
  * @Description: TODO
  */
-@Component
 public class NettyClient {
     private final Logger log = LoggerFactory.getLogger(getClass());
     private boolean isInitialized = false;
@@ -33,6 +30,15 @@ public class NettyClient {
     private Bootstrap bootstrap;
     private EventLoopGroup group = new NioEventLoopGroup();
     private ConcurrentHashMap<String, ServerState> serverStateMap = new ConcurrentHashMap();
+    private NetWorker netWorker;
+    private ProtocolPool protocolPool;
+    private HandlerConnectionLayer handlerConnectionlayer;
+
+    public NettyClient(NetWorker netWorker, ProtocolPool protocolPool, HandlerConnectionLayer handlerConnectionlayer) {
+        this.netWorker = netWorker;
+        this.protocolPool = protocolPool;
+        this.handlerConnectionlayer = handlerConnectionlayer;
+    }
 
     private class ServerState {
         public final static int DISCONNECTION = 0;
@@ -46,14 +52,6 @@ public class NettyClient {
         }
     }
 
-    @Autowired
-    NetWorker netWorker;
-
-    @Autowired
-    private ProtocolPool protocolPool;
-
-    @Autowired
-    HandlerConnectionLayer handlerConnectionlayer;
 
     public synchronized NettyClient initialize() {
         if (isInitialized) {

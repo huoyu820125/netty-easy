@@ -11,8 +11,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
@@ -21,7 +19,6 @@ import java.util.concurrent.TimeUnit;
  * @CreateTime 2020/3/11 15:08
  * @Description: TODO
  */
-@Component
 public class NettyServer {
     private final Logger log = LoggerFactory.getLogger(getClass());
     private boolean isInitialized = false;
@@ -35,11 +32,13 @@ public class NettyServer {
     private String svrName;
     private int port = 0;
 
-    @Autowired
     private HandlerConnectionLayer handlerConnectionlayer;
-
-    @Autowired
     private NetWorker netWorker;
+
+    public NettyServer(NetWorker netWorker, HandlerConnectionLayer handlerConnectionlayer) {
+        this.netWorker = netWorker;
+        this.handlerConnectionlayer = handlerConnectionlayer;
+    }
 
     public synchronized NettyServer initialize(String svrName, int port) {
         if (isInitialized) {

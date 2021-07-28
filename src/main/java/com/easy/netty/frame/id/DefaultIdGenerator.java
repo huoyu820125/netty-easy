@@ -1,7 +1,5 @@
 package com.easy.netty.frame.id;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -10,11 +8,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * @CreateTime 2020/3/23 13:28
  * @Description: TODO
  */
-@Component
 public class DefaultIdGenerator implements IIdGenerator {
 
-    @Value("${nodeId:0}")
-    Long nodeId;
+    Long nodeId = 0L;
 
     private AtomicLong id = new AtomicLong(0L);
 

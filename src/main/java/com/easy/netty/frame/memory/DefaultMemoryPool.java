@@ -4,14 +4,12 @@ import com.easy.netty.frame.connection.NetConnection;
 import com.easy.netty.frame.protocol.IProtocol;
 import com.easy.netty.sdk.NetConnectContext;
 import io.netty.channel.ChannelHandlerContext;
-import org.springframework.stereotype.Component;
 
 /**
  * @Author SunQian
  * @CreateTime 2020/3/18 15:18
  * @Description: TODO
  */
-@Component
 public class DefaultMemoryPool implements IMemoryPool {
 
     @Override

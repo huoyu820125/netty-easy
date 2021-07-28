@@ -7,32 +7,20 @@ import com.easy.netty.sdk.NetWorker;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * @Author SunQian
  * @CreateTime 2020/3/11 16:00
  * @Description: handler of connection layer
  */
-@Component
 @ChannelHandler.Sharable
 public class HandlerConnectionLayer extends SimpleChannelInboundHandler<ByteBuf> {
     private NetWorker netWorker;
+    private IHandlerBusinessLayer handlerBusinessLayer;
 
-    @Autowired
-    IHandlerBusinessLayer handlerBusinessLayer;
-
-    /**
-     * author: SunQian
-     * date: 2020/3/17 17:36
-     * title: TODO
-     * descritpion: TODO
-     * @param netWorker
-     * return: TODO
-     */
-    public void init(NetWorker netWorker) {
+    public HandlerConnectionLayer(NetWorker netWorker, IHandlerBusinessLayer handlerBusinessLayer) {
         this.netWorker = netWorker;
+        this.handlerBusinessLayer = handlerBusinessLayer;
     }
 
     /**

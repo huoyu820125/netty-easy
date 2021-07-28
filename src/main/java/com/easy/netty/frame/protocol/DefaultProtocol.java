@@ -3,7 +3,6 @@ package com.easy.netty.frame.protocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
 
 /**
  * @Author SunQian
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Component;
  *  Message stream consists of message size is integer type,
  *  message type is string, message content is byte array
  */
-@Component
 public class DefaultProtocol implements IProtocol {
     @Override
     public AbstractMessage analyseMessage(ByteBuf netStream) throws ExceptionMessageFormat {
